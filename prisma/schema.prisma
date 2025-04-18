@@ -28,6 +28,9 @@ model User {
   profile       Profile?
   favorites     Favorite[]
   refreshTokens RefreshToken[]
+
+  businessWorkers BusinessWorker[] // bir kullanıcı birden fazla çalışan olabilir
+
 }
 
 enum UserRole {
@@ -94,6 +97,8 @@ model Business {
   businessTypeId String?
   businessType   BusinessType? @relation(fields: [businessTypeId], references: [id])
   services        BusinessService[] 
+  workers BusinessWorker[]
+
 
 }
 
@@ -118,6 +123,34 @@ model BusinessService {
   updatedAt   DateTime  @updatedAt
 
   business Business @relation(fields: [businessId], references: [id])
+}
+
+model WorkerType {
+  id          String             @id @default(uuid())
+  name        String             @unique
+  description String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  businessWorkers BusinessWorker[]
+
+}
+
+model BusinessWorker {
+  id           String      @id @default(uuid())
+  businessId   String
+  workerTypeId String
+  userId       String?     // Opsiyonel: sistemde kayıtlı kullanıcı ile eşleştirilebilir
+  name         String
+  photoUrl     String?
+  bio          String?
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  business     Business    @relation(fields: [businessId], references: [id])
+  workerType   WorkerType  @relation(fields: [workerTypeId], references: [id])
+  user         User?       @relation(fields: [userId], references: [id])
 }
 
 model Favorite {

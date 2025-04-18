@@ -10,8 +10,9 @@ import profileRoutes from './routes/profile-routes'
 import favoriteRoutes from './routes/favorite-routes'
 import businessRoutes from './routes/business-routes'
 import businessTypeRoutes from './routes/businessType-routes'
-
-
+import businessServiceRoutes from './routes/businessServices-routes'
+import workerTypeRoutes from './routes/workerTypes-routes'
+import businessWorkerRoutes from './routes/businessWorkers-routes'
 
 
 dotenv.config()
@@ -42,6 +43,9 @@ app.use('/api/profile', profileRoutes)
 app.use('/api/favorites', favoriteRoutes)
 app.use('/api/businesses', businessRoutes)
 app.use('/api/business-types', businessTypeRoutes)
+app.use('/api/business-services', businessServiceRoutes)
+app.use('/api/worker-types', workerTypeRoutes) 
+app.use('/api/business-workers', businessWorkerRoutes)
 
 
 app.get('/api/health', (req, res) => {
