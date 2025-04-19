@@ -3,6 +3,7 @@ import { Router } from 'express'
 import { BusinessWorkerHandler } from '../controllers/businessWorkers-handler'
 import { authenticate } from '../middlewares/authenticateMiddleware'
 import { authorizeRoles } from '../middlewares/authorizeRoles'
+import { isBusinessOwner } from '../middlewares/isBusinessOwner' // ✅ eklendi
 
 const router = Router()
 const handler = new BusinessWorkerHandler()
@@ -13,6 +14,7 @@ router.use(authenticate)
 router.post(
   '/',
   authorizeRoles('store_owner', 'super_admin'),
+  isBusinessOwner,
   handler.create
 )
 
@@ -26,6 +28,7 @@ router.get('/:id', handler.getById)
 router.put(
   '/:id',
   authorizeRoles('store_owner', 'super_admin'),
+  isBusinessOwner, 
   handler.update
 )
 
@@ -33,6 +36,7 @@ router.put(
 router.delete(
   '/:id',
   authorizeRoles('store_owner', 'super_admin'),
+  isBusinessOwner, 
   handler.delete
 )
 

@@ -13,6 +13,8 @@ import businessTypeRoutes from './routes/businessType-routes'
 import businessServiceRoutes from './routes/businessServices-routes'
 import workerTypeRoutes from './routes/workerTypes-routes'
 import businessWorkerRoutes from './routes/businessWorkers-routes'
+import businessRatingRoutes from './routes/businessRatings-routes'
+
 
 
 dotenv.config()
@@ -46,7 +48,7 @@ app.use('/api/business-types', businessTypeRoutes)
 app.use('/api/business-services', businessServiceRoutes)
 app.use('/api/worker-types', workerTypeRoutes) 
 app.use('/api/business-workers', businessWorkerRoutes)
-
+app.use('/api/business-ratings', businessRatingRoutes)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Server ayakta 👌' })

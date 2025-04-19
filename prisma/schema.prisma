@@ -30,6 +30,8 @@ model User {
   refreshTokens RefreshToken[]
 
   businessWorkers BusinessWorker[] // bir kullanıcı birden fazla çalışan olabilir
+  businessRatings BusinessRating[]
+
 
 }
 
@@ -98,6 +100,8 @@ model Business {
   businessType   BusinessType? @relation(fields: [businessTypeId], references: [id])
   services        BusinessService[] 
   workers BusinessWorker[]
+  ratings BusinessRating[]
+
 
 
 }
@@ -151,6 +155,19 @@ model BusinessWorker {
   business     Business    @relation(fields: [businessId], references: [id])
   workerType   WorkerType  @relation(fields: [workerTypeId], references: [id])
   user         User?       @relation(fields: [userId], references: [id])
+}
+
+model BusinessRating {
+  id          String   @id @default(uuid())
+  userId      String
+  businessId  String
+  rating      Int      // 1-5 arasında olmalı
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+  business    Business @relation(fields: [businessId], references: [id])
+
+  @@unique([userId, businessId])
 }
 
 model Favorite {

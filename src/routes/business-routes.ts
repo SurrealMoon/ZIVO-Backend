@@ -11,7 +11,7 @@ const businessHandler = new BusinessHandler()
 
 router.use(authenticate)
 
-// 🔹 Yeni mağaza oluştur 12345678
+// 🔹 Yeni mağaza oluştur 12345678 / 123456
 router.post('/', authorizeRoles('store_owner', 'super_admin'), businessHandler.createBusiness)
 
 // 🔹 Tüm mağazaları getir

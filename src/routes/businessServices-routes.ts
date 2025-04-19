@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { BusinessServiceHandler } from '../controllers/businessServices-handler'
 import { authenticate } from '../middlewares/authenticateMiddleware'
 import { authorizeRoles } from '../middlewares/authorizeRoles'
-import { isServiceOwner } from '../middlewares/isServiceOwner'
+import { isBusinessOwner } from '../middlewares/isBusinessOwner'
 
 
 const router = Router()
@@ -14,7 +14,7 @@ router.use(authenticate)
 router.post(
     '/create',
     authorizeRoles('store_owner', 'super_admin'),
-    isServiceOwner,
+    isBusinessOwner,
     handler.createService
   )
 // 🔹 Belirli mağazanın tüm hizmetlerini getir
@@ -26,13 +26,13 @@ router.get('/detail/:id', handler.getServiceById)
 // 🔹 Hizmeti güncelle (sadece yetkili rol)
 router.put('/:id',
     authorizeRoles('store_owner', 'super_admin'),
-    isServiceOwner, 
+    isBusinessOwner, 
     handler.updateService
   )
 // 🔹 Hizmeti sil (store_owner & super_admin)
 router.delete('/:id',
     authorizeRoles('store_owner', 'super_admin'),
-    isServiceOwner,
+    isBusinessOwner,
     handler.deleteService
   )
 export default router
