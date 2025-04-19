@@ -239,6 +239,9 @@ model BusinessPortfolio {
   business   Business   @relation(fields: [businessId], references: [id])
 }
 
+// Enum değeri string olarak ("image veya "video") gönderildiğinde Prisma Client otomatik eşleştirir. Ama typescript'te MediaType
+// import edip doğrudan mediaType: MediaType.image gibi de gönderilebilir.
+
 model Favorite {
   id         String   @id @default(uuid())
   userId     String
