@@ -104,6 +104,9 @@ model Business {
   workers BusinessWorker[]
   ratings BusinessRating[]
   reviews BusinessReview[]
+  calendar BusinessCalendar[]
+  contacts BusinessContact[]
+  portfolios BusinessPortfolio[]
 
 }
 
@@ -183,6 +186,57 @@ model BusinessReview {
   business    Business     @relation(fields: [businessId], references: [id])
 
   @@unique([userId, businessId]) // aynı kullanıcı aynı mağazaya yalnızca 1 yorum
+}
+
+model BusinessContact {
+  id           String   @id @default(uuid())
+  businessId   String
+  contactType  String   // örnek: phone, email, whatsapp, instagram
+  contactValue String   // örnek: 0555..., support@..., @kuafor.ahmet
+  createdAt    DateTime @default(now())
+
+  business     Business @relation(fields: [businessId], references: [id])
+}
+
+model BusinessCalendar {
+  id          String   @id @default(uuid())
+  businessId  String
+  dayOfWeek   Int      // 0: Pazar, 1: Pazartesi, ..., 6: Cumartesi
+  isOpen      Boolean  @default(false)
+  note        String?  // özel not: "Yalnızca randevu ile", "Bayram dolayısıyla kapalı"
+  createdAt   DateTime @default(now())
+
+  business    Business @relation(fields: [businessId], references: [id])
+  shifts      BusinessShift[]
+}
+
+model BusinessShift {
+  id           String   @id @default(uuid())
+  calendarId   String
+  startTime    String   // örnek: "09:00"
+  endTime      String   // örnek: "13:00"
+  createdAt    DateTime @default(now())
+
+  calendar     BusinessCalendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+} 
+
+// BusinessCalender+BusinessShift açıklaması: Bu ikisi beraber çalışıyor. Calendar, mağazanın hangi günler çalıştığını ve opsiyonel 
+// olarak özel günlerini belirtir. Shift ise o gün içindeki çalışma saat aralıklarını belirler, 09:00-13:00 ve 14:00-18:00 gibi.
+
+
+enum MediaType {
+  image
+  video
+}
+
+model BusinessPortfolio {
+  id         String     @id @default(uuid())
+  businessId String
+  mediaUrl   String
+  mediaType  MediaType
+  createdAt  DateTime   @default(now())
+
+  business   Business   @relation(fields: [businessId], references: [id])
 }
 
 model Favorite {

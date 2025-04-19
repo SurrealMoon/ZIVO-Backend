@@ -15,6 +15,12 @@ import workerTypeRoutes from './routes/workerTypes-routes'
 import businessWorkerRoutes from './routes/businessWorkers-routes'
 import businessRatingRoutes from './routes/businessRatings-routes'
 import businessReviewRoutes from './routes/businessReviews-routes'
+import businessContactRoutes from './routes/businessContacts-routes'
+import businessCalendarRoutes from './routes/businessCalendar-routes'
+import businessPortfolioRoutes from './routes/businessPortfolio-routes'
+
+
+
 
 
 
@@ -52,6 +58,9 @@ app.use('/api/worker-types', workerTypeRoutes)
 app.use('/api/business-workers', businessWorkerRoutes)
 app.use('/api/business-ratings', businessRatingRoutes)
 app.use('/api/business-reviews', businessReviewRoutes)
+app.use('/api/business-contacts', businessContactRoutes)
+app.use('/api/business-calendar', businessCalendarRoutes)
+app.use('/api/business-portfolio', businessPortfolioRoutes)
 
 
 app.get('/api/health', (req, res) => {
