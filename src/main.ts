@@ -14,6 +14,8 @@ import businessServiceRoutes from './routes/businessServices-routes'
 import workerTypeRoutes from './routes/workerTypes-routes'
 import businessWorkerRoutes from './routes/businessWorkers-routes'
 import businessRatingRoutes from './routes/businessRatings-routes'
+import businessReviewRoutes from './routes/businessReviews-routes'
+
 
 
 
@@ -49,6 +51,8 @@ app.use('/api/business-services', businessServiceRoutes)
 app.use('/api/worker-types', workerTypeRoutes) 
 app.use('/api/business-workers', businessWorkerRoutes)
 app.use('/api/business-ratings', businessRatingRoutes)
+app.use('/api/business-reviews', businessReviewRoutes)
+
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Server ayakta 👌' })

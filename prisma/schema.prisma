@@ -31,6 +31,8 @@ model User {
 
   businessWorkers BusinessWorker[] // bir kullanıcı birden fazla çalışan olabilir
   businessRatings BusinessRating[]
+  businessReviews BusinessReview[]
+
 
 
 }
@@ -101,8 +103,7 @@ model Business {
   services        BusinessService[] 
   workers BusinessWorker[]
   ratings BusinessRating[]
-
-
+  reviews BusinessReview[]
 
 }
 
@@ -168,6 +169,20 @@ model BusinessRating {
   business    Business @relation(fields: [businessId], references: [id])
 
   @@unique([userId, businessId])
+}
+
+model BusinessReview {
+  id          String   @id @default(uuid())
+  userId      String
+  businessId  String
+  content     String
+  imageUrl    String?      // opsiyonel görsel (fotoğraf, ekran görüntüsü vs)
+  createdAt   DateTime     @default(now())
+
+  user        User         @relation(fields: [userId], references: [id])
+  business    Business     @relation(fields: [businessId], references: [id])
+
+  @@unique([userId, businessId]) // aynı kullanıcı aynı mağazaya yalnızca 1 yorum
 }
 
 model Favorite {
