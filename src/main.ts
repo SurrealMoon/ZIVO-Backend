@@ -20,7 +20,6 @@ import businessCalendarRoutes from './routes/businessCalendar-routes'
 import businessPortfolioRoutes from './routes/businessPortfolio-routes'
 import appointmentRoutes from './routes/appointments-routes'
 
-
 dotenv.config()
 
 const app = express()
@@ -30,18 +29,32 @@ const prisma = new PrismaClient({
       url: process.env.DATABASE_URL,
     },
   },
-  log: ['query', 'info', 'warn', 'error'], // Add detailed logging
+  log: ['query', 'info', 'warn', 'error'],
 })
 
-// Middleware
-app.use(cors({
-  origin: 'http://localhost:3006',
+// ✅ Gelişmiş CORS ayarı
+const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3006']
+
+const corsOptions: cors.CorsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error('CORS policy violation'))
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'Content-Type', 'Accept', 'Authorization'],
   credentials: true,
-}))
+}
+
+app.use(cors(corsOptions))
+
+// Diğer middleware'ler
 app.use(express.json())
 app.use(cookieParser())
 
-// Routes
+// Route'lar
 app.use('/api/users', userRoutes)
 app.use('/api/admin', superAdminRoutes)
 app.use('/api/auth', authRoutes)
@@ -50,7 +63,7 @@ app.use('/api/favorites', favoriteRoutes)
 app.use('/api/businesses', businessRoutes)
 app.use('/api/business-types', businessTypeRoutes)
 app.use('/api/business-services', businessServiceRoutes)
-app.use('/api/worker-types', workerTypeRoutes) 
+app.use('/api/worker-types', workerTypeRoutes)
 app.use('/api/business-workers', businessWorkerRoutes)
 app.use('/api/business-ratings', businessRatingRoutes)
 app.use('/api/business-reviews', businessReviewRoutes)
@@ -58,8 +71,6 @@ app.use('/api/business-contacts', businessContactRoutes)
 app.use('/api/business-calendar', businessCalendarRoutes)
 app.use('/api/business-portfolio', businessPortfolioRoutes)
 app.use('/api/appointments', appointmentRoutes)
-
-
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Server ayakta 👌' })
@@ -71,7 +82,7 @@ const PORT = process.env.PORT || 5000
 async function startServer() {
   try {
     console.log('🔁 Server başlatılıyor...')
-    
+
     await prisma.$connect()
     console.log('📡 Veritabanına başarıyla bağlanıldı.')
 
