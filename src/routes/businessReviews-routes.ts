@@ -8,21 +8,25 @@ const handler = new BusinessReviewHandler()
 
 router.use(authenticate)
 
-router.post('/', handler.create)
+// Yorum oluşturma (appointmentId üzerinden)
+router.post('/appointment', authorizeRoles('customer'), handler.create)
 
-// Admin/superadmin herkesin yorumunu, kullanıcı sadece kendi yorumunu güncelleyebilir
+// Yorum güncelleme
 router.put(
-    '/:id',
-    authorizeRoles('customer', 'admin', 'super_admin'),
-    handler.update
-  )
+  '/:id',
+  authorizeRoles('customer', 'admin', 'super_admin'),
+  handler.update
+)
 
+// Yorum silme
 router.delete(
-    '/:id',
-    authorizeRoles('customer', 'admin', 'super_admin'), // yorum sahibi veya moderatör olabilir
-    handler.delete
-  )
+  '/:id',
+  authorizeRoles('customer', 'admin', 'super_admin'),
+  handler.delete
+)
 
+// Mağaza bazlı tüm yorumlar
 router.get('/business/:businessId', handler.getByBusiness)
 
 export default router
+

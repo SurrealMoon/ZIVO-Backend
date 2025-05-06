@@ -1,6 +1,9 @@
 import { Response, NextFunction } from 'express'
 import { ProfileService } from '../services/profile-service'
 import { AuthenticatedRequest } from '../middlewares/authenticateMiddleware'
+import { CustomRequest } from '../types/custom';
+import { getPresignedPhotoUrl } from '../utils/s3-utils';
+
 
 const profileService = new ProfileService()
 
@@ -68,4 +71,37 @@ export class ProfileHandler {
       next(error)
     }
   }
+
+  async getPhotoUrl(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { key } = req.query;
+  
+      if (!key || typeof key !== 'string') {
+        res.status(400).json({ error: 'Geçerli bir photoKey belirtilmeli' });
+        return;
+      }
+  
+      const signedUrl = await getPresignedPhotoUrl(key);
+      res.status(200).json({ url: signedUrl });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deletePhoto(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.userId;
+      if (!userId) {
+        res.status(401).json({ message: 'Yetkisiz erişim' });
+        return;
+      }
+  
+      await profileService.deletePhoto(userId);
+  
+      res.status(200).json({ message: 'Profil fotoğrafı silindi' });
+    } catch (error) {
+      next(error);
+    }
+  }
+  
 }

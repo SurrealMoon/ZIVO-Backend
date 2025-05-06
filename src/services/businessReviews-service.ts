@@ -1,34 +1,35 @@
-// src/services/businessReviews-service.ts
 import prisma from '../lib/prismaClient'
 
 export class BusinessReviewService {
   // Yeni yorum oluştur
-  async create(userId: string, businessId: string, content: string, imageUrl?: string) {
-    const existing = await prisma.businessReview.findUnique({
-      where: {
-        userId_businessId: { userId, businessId },
-      },
+  async create(userId: string, appointmentId: string, content: string, photoKey?: string) {
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: { review: true, business: true },
     })
-
-    if (existing) {
-      throw new Error('Bu kullanıcı bu mağazaya zaten yorum yapmış.')
-    }
-
+  
+    if (!appointment) throw new Error('Randevu bulunamadı.')
+    if (appointment.customerId !== userId) throw new Error('Bu randevu size ait değil.')
+    if (appointment.status !== 'COMPLETED') throw new Error('Yalnızca tamamlanan randevular için yorum yapabilirsiniz.')
+    if (appointment.review) throw new Error('Bu randevu için zaten bir yorum bırakılmış.')
+  
     return await prisma.businessReview.create({
       data: {
+        appointmentId,
         userId,
-        businessId,
+        businessId: appointment.businessId,
         content,
-        imageUrl,
+        photoKey,
       },
     })
   }
+  
 
   // Yorum güncelle
-  async updateById(id: string, content: string, imageUrl?: string) {
+  async updateById(id: string, content: string, photoKey?: string) {
     return await prisma.businessReview.update({
       where: { id },
-      data: { content, imageUrl },
+      data: { content, photoKey },
     })
   }
 
@@ -51,6 +52,16 @@ export class BusinessReviewService {
             photoKey: true,
           },
         },
+        appointment: {
+          select: {
+            date: true,
+            services: {
+              include: {
+                service: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -58,19 +69,17 @@ export class BusinessReviewService {
     })
   }
 
-  async getReview(userId: string, businessId: string) {
-    return await prisma.businessReview.findFirst({
-      where: {
-        businessId,
-        userId,
-      },
+  // Belirli appointment için yorum
+  async getByAppointmentId(appointmentId: string) {
+    return await prisma.businessReview.findUnique({
+      where: { appointmentId },
     })
   }
 
+  // ID ile getir
   async getReviewById(reviewId: string) {
     return await prisma.businessReview.findUnique({
       where: { id: reviewId },
     })
   }
-  
 }

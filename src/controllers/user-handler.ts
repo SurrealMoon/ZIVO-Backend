@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { UserService } from '../services/user-service'
 import { UserRole } from '@prisma/client'
 
+
 const userService = new UserService()
 
 export class UserHandler {

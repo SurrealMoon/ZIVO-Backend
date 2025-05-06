@@ -18,11 +18,7 @@ import businessReviewRoutes from './routes/businessReviews-routes'
 import businessContactRoutes from './routes/businessContacts-routes'
 import businessCalendarRoutes from './routes/businessCalendar-routes'
 import businessPortfolioRoutes from './routes/businessPortfolio-routes'
-
-
-
-
-
+import appointmentRoutes from './routes/appointments-routes'
 
 
 dotenv.config()
@@ -61,6 +57,8 @@ app.use('/api/business-reviews', businessReviewRoutes)
 app.use('/api/business-contacts', businessContactRoutes)
 app.use('/api/business-calendar', businessCalendarRoutes)
 app.use('/api/business-portfolio', businessPortfolioRoutes)
+app.use('/api/appointments', appointmentRoutes)
+
 
 
 app.get('/api/health', (req, res) => {

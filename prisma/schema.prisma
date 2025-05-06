@@ -32,8 +32,7 @@ model User {
   businessWorkers BusinessWorker[] // bir kullanıcı birden fazla çalışan olabilir
   businessRatings BusinessRating[]
   businessReviews BusinessReview[]
-
-
+  appointments Appointment[] @relation("UserAppointments")
 
 }
 
@@ -90,7 +89,7 @@ model Business {
   phone       String?
   email       String?
   website     String?
-  photoUrl    String? // kapak/ana görsel
+  photoKey    String? // kapak/ana görsel
   isApproved  Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -107,6 +106,8 @@ model Business {
   calendar BusinessCalendar[]
   contacts BusinessContact[]
   portfolios BusinessPortfolio[]
+  appointments Appointment[]
+
 
 }
 
@@ -131,6 +132,8 @@ model BusinessService {
   updatedAt   DateTime  @updatedAt
 
   business Business @relation(fields: [businessId], references: [id])
+  appointmentServices AppointmentService[] 
+
 }
 
 model WorkerType {
@@ -150,7 +153,7 @@ model BusinessWorker {
   workerTypeId String
   userId       String?     // Opsiyonel: sistemde kayıtlı kullanıcı ile eşleştirilebilir
   name         String
-  photoUrl     String?
+  photoKey     String?
   bio          String?
   isActive     Boolean     @default(true)
   createdAt    DateTime    @default(now())
@@ -159,6 +162,7 @@ model BusinessWorker {
   business     Business    @relation(fields: [businessId], references: [id])
   workerType   WorkerType  @relation(fields: [workerTypeId], references: [id])
   user         User?       @relation(fields: [userId], references: [id])
+  appointments Appointment[] @relation("WorkerAppointments")
 }
 
 model BusinessRating {
@@ -175,17 +179,19 @@ model BusinessRating {
 }
 
 model BusinessReview {
-  id          String   @id @default(uuid())
-  userId      String
-  businessId  String
-  content     String
-  imageUrl    String?      // opsiyonel görsel (fotoğraf, ekran görüntüsü vs)
-  createdAt   DateTime     @default(now())
+  id            String    @id @default(uuid())
+  appointmentId String    @unique
+  userId        String
+  businessId    String
+  content       String
+  photoKey      String?   // opsiyonel görsel (fotoğraf, ekran görüntüsü vs)
+  createdAt     DateTime  @default(now())
 
   user        User         @relation(fields: [userId], references: [id])
   business    Business     @relation(fields: [businessId], references: [id])
+appointment Appointment @relation("AppointmentReview", fields: [appointmentId], references: [id])
 
-  @@unique([userId, businessId]) // aynı kullanıcı aynı mağazaya yalnızca 1 yorum
+  @@map("reviews")
 }
 
 model BusinessContact {
@@ -223,6 +229,48 @@ model BusinessShift {
 // BusinessCalender+BusinessShift açıklaması: Bu ikisi beraber çalışıyor. Calendar, mağazanın hangi günler çalıştığını ve opsiyonel 
 // olarak özel günlerini belirtir. Shift ise o gün içindeki çalışma saat aralıklarını belirler, 09:00-13:00 ve 14:00-18:00 gibi.
 
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model Appointment {
+  id          String    @id @default(uuid())
+  customerId  String
+  businessId  String
+  workerId    String?
+  date        DateTime
+  status      AppointmentStatus @default(PENDING) // Randevu durumu
+  note        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  deletedBy   String?
+
+  customer   User             @relation("UserAppointments", fields: [customerId], references: [id])
+  business   Business         @relation(fields: [businessId], references: [id])
+  worker     BusinessWorker?  @relation("WorkerAppointments", fields: [workerId], references: [id])
+  review     BusinessReview?  @relation("AppointmentReview")
+  services   AppointmentService[]
+
+  @@index([customerId])
+  @@index([businessId])
+}
+
+
+model AppointmentService {
+  id            String   @id @default(uuid())
+  appointmentId String
+  serviceId     String
+
+  appointment   Appointment      @relation(fields: [appointmentId], references: [id])
+  service       BusinessService  @relation(fields: [serviceId], references: [id])
+
+  @@unique([appointmentId, serviceId])
+}
 
 enum MediaType {
   image

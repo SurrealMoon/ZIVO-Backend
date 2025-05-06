@@ -1,6 +1,10 @@
 import { PrismaClient } from '@prisma/client'
+import { S3Service } from './s3-service'; 
+
 
 const prisma = new PrismaClient()
+const s3Service = new S3Service();
+
 
 export class ProfileService {
   async createProfile(userId: string, data: { bio?: string; birthDate?: Date; avatarUrl?: string }) {
@@ -41,4 +45,36 @@ export class ProfileService {
       throw error
     }
   }
+  async uploadPhoto(userId: string, file: Express.Multer.File): Promise<string> {
+    const photoKey = await s3Service.uploadFile(file.buffer, file.originalname, 'user-photos');
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { photoKey },
+    });
+
+    return photoKey;
 }
+async deletePhoto(userId: string): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { photoKey: true },
+  });
+
+  if (!user || !user.photoKey) {
+    throw new Error('Fotoğraf bulunamadı veya zaten silinmiş.');
+  }
+
+  // S3'ten sil
+  await s3Service.deleteFile(user.photoKey);
+
+  // DB'den sil (null yap)
+  await prisma.user.update({
+    where: { id: userId },
+    data: { photoKey: null },
+  });
+}
+
+
+}
+

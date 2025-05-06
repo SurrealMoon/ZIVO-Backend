@@ -17,8 +17,17 @@ export const authenticate = (req: AuthenticatedRequest, res: Response, next: Nex
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
     req.userId = decoded.userId
     req.roles = decoded.roles
+
+    // ✔️ Buraya ekle:
+    ;(req as any).user = {
+      id: decoded.userId,
+      email: decoded.email,
+      roles: decoded.roles,
+    }
+
     next()
   } catch (err) {
     res.status(401).json({ error: 'Geçersiz token' })
   }
 }
+
