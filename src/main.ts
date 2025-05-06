@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
+import rateLimit from 'express-rate-limit'
 import { PrismaClient } from '@prisma/client'
 import dotenv from 'dotenv'
 import userRoutes from './routes/user-routes'
@@ -34,6 +35,15 @@ const prisma = new PrismaClient({
 })
 
 app.use(helmet())
+
+// Rate limiting önlemleri
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 dakika
+  max: 100, // Her IP için max 100 istek
+  standardHeaders: true,   
+  legacyHeaders: false, 
+})
+app.use('/api', limiter)
 
 // CORS ayarları
 const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3006']
