@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import { PrismaClient } from '@prisma/client'
 import dotenv from 'dotenv'
@@ -32,7 +33,9 @@ const prisma = new PrismaClient({
   log: ['query', 'info', 'warn', 'error'],
 })
 
-// ✅ Gelişmiş CORS ayarı
+app.use(helmet())
+
+// CORS ayarları
 const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3006']
 
 const corsOptions: cors.CorsOptions = {
