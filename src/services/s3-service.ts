@@ -55,14 +55,18 @@ export class S3Service {
     return path.basename(filename).replace(/[^a-zA-Z0-9.-]/g, '_');
   }
 
-  async getPresignedDownloadUrl(objectKey: string, expirySeconds = 300): Promise<string> {
+  async getPresignedDownloadUrl(objectKey: string, contentType = 'application/octet-stream', expirySeconds = 300): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: BUCKET_NAME,
       Key: objectKey,
+      ResponseContentDisposition: 'inline',
+      ResponseContentType: contentType, // DİNAMİK type
     });
   
     return await getSignedUrl(s3, command, { expiresIn: expirySeconds });
   }
+  
+  
 }
 
 

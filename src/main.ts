@@ -21,6 +21,8 @@ import businessContactRoutes from './routes/businessContacts-routes'
 import businessCalendarRoutes from './routes/businessCalendar-routes'
 import businessPortfolioRoutes from './routes/businessPortfolio-routes'
 import appointmentRoutes from './routes/appointments-routes'
+import mediaRoutes from './routes/media-routes'
+
 
 dotenv.config()
 
@@ -84,9 +86,11 @@ app.use('/api/business-contacts', businessContactRoutes)
 app.use('/api/business-calendar', businessCalendarRoutes)
 app.use('/api/business-portfolio', businessPortfolioRoutes)
 app.use('/api/appointments', appointmentRoutes)
+app.use('/api/media', mediaRoutes)
+
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'Server ayakta 👌' })
+  res.json({ status: 'Server ayakta!' })
 })
 
 // Server başlatıcı
@@ -94,10 +98,10 @@ const PORT = process.env.PORT || 5000
 
 async function startServer() {
   try {
-    console.log('🔁 Server başlatılıyor...')
+    console.log('Server başlatılıyor...')
 
     await prisma.$connect()
-    console.log('📡 Veritabanına başarıyla bağlanıldı.')
+    console.log('Veritabanına başarıyla bağlanıldı.')
 
     app.listen(PORT, () => {
       console.log(`Server ${PORT} portunda çalışıyor...`)

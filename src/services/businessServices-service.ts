@@ -49,5 +49,6 @@ export class BusinessServiceService {
     return await prisma.businessService.delete({
       where: { id },
     })
+  
   }
 }

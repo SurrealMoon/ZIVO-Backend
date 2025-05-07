@@ -1,6 +1,10 @@
 import { PrismaClient, Prisma } from '@prisma/client'
+import { S3Service } from './s3-service'
+
 
 const prisma = new PrismaClient()
+const s3Service = new S3Service()
+
 
 export class BusinessService {
   // Mağaza oluştur (sadece store_owner yetkisiyle)
@@ -76,4 +80,36 @@ export class BusinessService {
       throw error
     }
   }
+
+    
+// Business kapak görselini yükle
+async uploadCoverImage(businessId: string, file: Express.Multer.File): Promise<string> {
+  const photoKey = await s3Service.uploadFile(file.buffer, file.originalname, 'business-covers')
+
+  await prisma.business.update({
+    where: { id: businessId },
+    data: { photoKey },
+  })
+
+  return photoKey
+}
+
+// Business görselini sil
+async deleteCoverImage(businessId: string): Promise<void> {
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { photoKey: true },
+  })
+
+  if (!business || !business.photoKey) {
+    throw new Error('Kapak fotoğrafı bulunamadı veya zaten silinmiş.')
+  }
+
+  await s3Service.deleteFile(business.photoKey)
+
+  await prisma.business.update({
+    where: { id: businessId },
+    data: { photoKey: null },
+  })
+}
 }

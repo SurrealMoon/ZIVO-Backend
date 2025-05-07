@@ -74,7 +74,5 @@ async deletePhoto(userId: string): Promise<void> {
     data: { photoKey: null },
   });
 }
-
-
 }
 

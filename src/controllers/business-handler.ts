@@ -84,4 +84,38 @@ export class BusinessHandler {
       next(error)
     }
   }
-}
+    // Kapak görseli yükleme
+    async uploadCoverImage(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+      try {
+        const { id: businessId } = req.params;
+        const file = req.file
+  
+        if (!file) {
+          res.status(400).json({ error: 'Dosya yüklenmedi' })
+          return
+        }
+  
+        const photoKey = await businessService.uploadCoverImage(businessId, file)
+  
+        res.status(200).json({
+          message: 'Kapak görseli başarıyla yüklendi',
+          photoKey,
+        })
+      } catch (error) {
+        next(error)
+      }
+    }
+  
+    // Kapak görseli silme
+    async deleteCoverImage(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+      try {
+        const { id: businessId } = req.params;
+  
+        await businessService.deleteCoverImage(businessId)
+  
+        res.status(200).json({ message: 'Kapak görseli silindi' })
+      } catch (error) {
+        next(error)
+      }
+    }
+  }
