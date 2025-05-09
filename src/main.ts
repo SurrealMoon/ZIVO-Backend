@@ -36,6 +36,7 @@ const prisma = new PrismaClient({
   log: ['query', 'info', 'warn', 'error'],
 })
 
+
 app.use(helmet())
 
 // Rate limiting önlemleri
@@ -94,7 +95,7 @@ app.get('/api/health', (req, res) => {
 })
 
 // Server başlatıcı
-const PORT = process.env.PORT || 5000
+const PORT = Number(process.env.PORT) || 5050;
 
 async function startServer() {
   try {
@@ -103,9 +104,10 @@ async function startServer() {
     await prisma.$connect()
     console.log('Veritabanına başarıyla bağlanıldı.')
 
-    app.listen(PORT, () => {
-      console.log(`Server ${PORT} portunda çalışıyor...`)
-    })
+ app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server ${PORT} portunda tüm IP'lerde çalışıyor...`);
+});
+
   } catch (error) {
     console.error('Server başlatılamadı:', error)
     process.exit(1)
