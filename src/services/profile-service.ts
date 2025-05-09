@@ -34,17 +34,38 @@ export class ProfileService {
     }
   }
 
-  async updateMyProfile(userId: string, data: { bio?: string; birthDate?: Date; avatarUrl?: string }) {
-    try {
-      return await prisma.profile.update({
-        where: { userId },
-        data
-      })
-    } catch (error) {
-      console.error('Profil güncelleme sırasında hata:', error)
-      throw error
+ async updateMyProfile(userId: string, data: {
+  bio?: string;
+  birthDate?: Date;
+  avatarUrl?: string;
+  gender?: 'men' | 'women' | 'everyone'; 
+}) {
+  try {
+    const { gender, ...profileData } = data;
+
+    // Profil güncelleme (yalnızca profile alanları)
+    const updatedProfile = await prisma.profile.update({
+      where: { userId },
+      data: profileData,
+    });
+
+    // Kullanıcının gender bilgisi güncelleniyor
+    if (gender) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          gender,
+        },
+      });
     }
+
+    return updatedProfile;
+  } catch (error) {
+    console.error('Profil güncelleme sırasında hata:', error);
+    throw error;
   }
+}
+
   async uploadPhoto(userId: string, file: Express.Multer.File): Promise<string> {
     const photoKey = await s3Service.uploadFile(file.buffer, file.originalname, 'user-photos');
 
