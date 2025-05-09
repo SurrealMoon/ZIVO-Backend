@@ -1,13 +1,12 @@
-import { Request, Response, NextFunction } from 'express'
+import { Response, NextFunction } from 'express'
 import { UserService } from '../services/user-service'
 import { UserRole } from '@prisma/client'
-
+import { AuthenticatedRequest } from '../middlewares/authenticateMiddleware'
 
 const userService = new UserService()
 
 export class UserHandler {
-  // Kullanıcı Kayıt
-  async register(req: Request, res: Response, next: NextFunction) {
+  async register(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { 
         tag, name, surname, email, 
@@ -30,8 +29,7 @@ export class UserHandler {
     }
   }
 
-  // Kullanıcı Girişi
-  async login(req: Request, res: Response, next: NextFunction) {
+  async login(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body
 
@@ -52,11 +50,9 @@ export class UserHandler {
     }
   }
 
-  // Kullanıcı Profili Güncelleme
-  async updateProfile(req: Request, res: Response, next: NextFunction) {
+  async updateProfile(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      // user özelliği artık tanımlı
-      const userId = req.user?.id // Optional chaining kullanarak
+      const userId = req.authUser?.id
       if (!userId) {
         return res.status(401).json({ message: 'Yetkisiz erişim' })
       }
@@ -74,8 +70,7 @@ export class UserHandler {
     }
   }
 
-  // Kullanıcı Rolleri Güncelleme (Super Admin için)
-  async updateUserRoles(req: Request, res: Response, next: NextFunction) {
+  async updateUserRoles(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { userId } = req.params
       const { roles } = req.body
@@ -90,10 +85,9 @@ export class UserHandler {
     }
   }
 
-  // Kullanıcı Profili Getirme
-  async getUserProfile(req: Request, res: Response, next: NextFunction) {
+  async getUserProfile(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id
+      const userId = req.authUser?.id
       if (!userId) {
         return res.status(401).json({ message: 'Yetkisiz erişim' })
       }
@@ -106,8 +100,7 @@ export class UserHandler {
     }
   }
 
-  // Tüm Kullanıcıları Getirme (Super Admin için)
-  async getAllUsers(req: Request, res: Response, next: NextFunction) {
+  async getAllUsers(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const users = await userService.getAllUsers()
 
@@ -117,8 +110,7 @@ export class UserHandler {
     }
   }
 
-  // Kullanıcı Silme (Super Admin için)
-  async deleteUser(req: Request, res: Response, next: NextFunction) {
+  async deleteUser(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { userId } = req.params
 

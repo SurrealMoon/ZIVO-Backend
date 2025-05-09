@@ -1,10 +1,9 @@
-import { Router } from 'express'
+import express from 'express'
+import { UserHandler } from '../controllers/user-handler'
 
-const router = Router()
+const router = express.Router()
+const userHandler = new UserHandler()
 
-// örnek endpoint
-router.get('/', (req, res) => {
-  res.json({ message: 'User route aktif!' })
-})
+router.post('/register', userHandler.register.bind(userHandler))
 
 export default router

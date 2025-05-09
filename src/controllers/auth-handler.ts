@@ -1,47 +1,48 @@
-import { Request, Response, NextFunction, RequestHandler } from 'express'
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcryptjs'
-import { PrismaClient } from '@prisma/client'
-import { AuthService } from '../services/auth-service'
+import { Request, Response, NextFunction, RequestHandler } from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
+import { AuthService } from '../services/auth-service';
+import { AuthenticatedRequest } from '../middlewares/authenticateMiddleware';
 
-const prisma = new PrismaClient()
-const authService = new AuthService()
+const prisma = new PrismaClient();
+const authService = new AuthService();
 
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { email, password } = req.body
+    const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({ error: 'Email ve şifre gereklidir' })
-      return
+      res.status(400).json({ error: 'Email ve şifre gereklidir' });
+      return;
     }
 
     const user = await prisma.user.findUnique({
       where: { email },
       include: { roles: true },
-    })
+    });
 
     if (!user || !user.password || !user.salt) {
-      res.status(401).json({ error: 'Geçersiz kimlik bilgileri' })
-      return
+      res.status(401).json({ error: 'Geçersiz kimlik bilgileri' });
+      return;
     }
 
-    const isValid = await bcrypt.compare(password + user.salt, user.password)
+    const isValid = await bcrypt.compare(password + user.salt, user.password);
     if (!isValid) {
-      res.status(401).json({ error: 'Geçersiz şifre' })
-      return
+      res.status(401).json({ error: 'Geçersiz şifre' });
+      return;
     }
 
     const payload = {
       userId: user.id,
       roles: user.roles.map((r) => r.role),
-    }
+    };
 
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
       expiresIn: '1h',
-    })
+    });
 
-    const refreshToken = await authService.generateRefreshToken(user.id)
+    const refreshToken = await authService.generateRefreshToken(user.id);
 
     res
       .cookie('access_token', accessToken, {
@@ -52,7 +53,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       .cookie('refresh_token', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 gün
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .status(200)
       .json({
@@ -60,35 +61,34 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
         userId: user.id,
         accessToken,
         refreshToken,
-      })
+      });
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
+};
 
 export const logout = (req: Request, res: Response) => {
   res
     .clearCookie('access_token')
     .clearCookie('refresh_token')
     .status(200)
-    .json({ message: 'Başarıyla çıkış yapıldı' })
-}
+    .json({ message: 'Başarıyla çıkış yapıldı' });
+};
 
-// 🔄 Refresh token endpoint
 export const refreshToken = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const token = req.cookies?.refresh_token || req.body.refresh_token
+    const token = req.cookies?.refresh_token || req.body.refresh_token;
 
     if (!token) {
-      res.status(401).json({ error: 'Refresh token bulunamadı' })
-      return
+      res.status(401).json({ error: 'Refresh token bulunamadı' });
+      return;
     }
 
-    const tokens = await authService.rotateRefreshToken(token)
+    const tokens = await authService.rotateRefreshToken(token);
 
     res
       .cookie('access_token', tokens.accessToken, {
@@ -106,8 +106,40 @@ export const refreshToken = async (
         message: 'Token yenilendi',
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
-      })
+      });
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
+};
+
+// /auth/me → Token'dan kullanıcı bilgilerini getirir
+export const getMe = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({ error: 'Kimlik doğrulama başarısız.' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      include: {
+        profile: true,
+        roles: true,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+      return;
+    }
+
+    res.status(200).json({
+      id: user.id,
+      email: user.email,
+      roles: user.roles.map((r) => r.role),
+      profile: user.profile,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
