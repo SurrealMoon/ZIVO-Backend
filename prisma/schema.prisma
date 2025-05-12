@@ -97,6 +97,9 @@ model Business {
   deletedAt   DateTime?
   deletedBy   String?
 
+  // amenities satırı ekleyebilirsin, koordinat yapısı location:  latitude, longitude gibi olabilir ya da böyle
+  // de kalabilir onu sor.
+
   businessTypeId String?
   businessType   BusinessType? @relation(fields: [businessTypeId], references: [id])
   services        BusinessService[] 
@@ -186,6 +189,8 @@ model BusinessReview {
   content       String
   photoKey      String?   // opsiyonel görsel (fotoğraf, ekran görüntüsü vs)
   createdAt     DateTime  @default(now())
+
+  // yorumun girildiği tarihi ekleyebilirsin
 
   user        User         @relation(fields: [userId], references: [id])
   business    Business     @relation(fields: [businessId], references: [id])

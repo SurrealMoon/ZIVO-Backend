@@ -1,4 +1,5 @@
 import { PrismaClient, Prisma, UserRole } from '@prisma/client'
+import { ProfileService } from './profile-service';
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
@@ -9,6 +10,8 @@ type UserWithRoles = Prisma.UserGetPayload<{
 }>
 
 const prisma = new PrismaClient()
+const profileService = new ProfileService();
+
 
 export class UserService {
   // Salt oluşturma metodu
@@ -32,10 +35,7 @@ export class UserService {
   }
 
   // Kullanıcı kayıt işlemi
-  async register(data: Prisma.UserCreateInput & { 
-    password: string 
-    salt?: string 
-  }) {
+   async register(data: Prisma.UserCreateInput & { password: string; salt?: string }) {
     try {
       // Salt oluşturma
       const salt = this.generateSalt();
@@ -45,23 +45,31 @@ export class UserService {
 
       // Email kontrolü
       const existingUser = await prisma.user.findUnique({
-        where: { email: data.email }
+        where: { email: data.email },
       });
 
       if (existingUser) {
         throw new Error('Bu email zaten kullanımda');
       }
 
+      // Kullanıcı oluştur
       const user = await prisma.user.create({
         data: {
           ...data,
           password: hashedPassword,
-          salt, // Salt'ı da kaydet
+          salt,
           roles: {
-            create: [{ role: 'customer' }] // Varsayılan rol
-          }
+            create: [{ role: 'customer' }],
+          },
         },
-        include: { roles: true }
+        include: { roles: true },
+      });
+
+      // 🔥 Kullanıcıya ait boş profile otomatik oluştur
+      await profileService.createProfile(user.id, {
+        bio: '',
+        birthDate: undefined,
+        avatarUrl: undefined,
       });
 
       return user;

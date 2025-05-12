@@ -51,26 +51,30 @@ export class ProfileHandler {
   }
 
   // Profil güncelle
-  async updateMyProfile(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const userId = req.userId
-      if (!userId) {
-        res.status(401).json({ message: 'Yetkisiz erişim' })
-        return
-      }
-
-      const updateData = req.body
-
-      const updatedProfile = await profileService.updateMyProfile(userId, updateData)
-
-      res.status(200).json({
-        message: 'Profil güncellendi',
-        profile: updatedProfile,
-      })
-    } catch (error) {
-      next(error)
+async updateMyProfile(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const userId = req.userId
+    if (!userId) {
+      res.status(401).json({ message: 'Yetkisiz erişim' })
+      return
     }
+
+    const { gender, ...profileData } = req.body;
+
+    const updatedProfile = await profileService.updateMyProfile(userId, {
+      ...profileData,
+      gender,
+    });
+
+    res.status(200).json({
+      message: 'Profil güncellendi',
+      profile: updatedProfile,
+    });
+  } catch (error) {
+    next(error)
   }
+}
+
 
   async getPhotoUrl(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {

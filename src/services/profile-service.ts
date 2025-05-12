@@ -24,40 +24,72 @@ export class ProfileService {
   }
 
   async getMyProfile(userId: string) {
-    try {
-      return await prisma.profile.findUnique({
-        where: { userId }
-      })
-    } catch (error) {
-      console.error('Profil getirme sırasında hata:', error)
-      throw error
-    }
+  try {
+    return await prisma.profile.findUnique({
+      where: { userId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            phone: true,
+            gender: true,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Profil getirme sırasında hata:', error);
+    throw error;
   }
+}
 
- async updateMyProfile(userId: string, data: {
+
+async updateMyProfile(userId: string, data: {
+  name?: string;
+  surname?: string;
+  phone?: string;
   bio?: string;
   birthDate?: Date;
   avatarUrl?: string;
-  gender?: 'men' | 'women' | 'everyone'; 
+  gender?: 'men' | 'women' | 'everyone';
 }) {
   try {
-    const { gender, ...profileData } = data;
+    const {
+      name,
+      surname,
+      phone,
+      gender,
+      bio,
+      birthDate,
+      avatarUrl,
+    } = data;
 
-    // Profil güncelleme (yalnızca profile alanları)
+    // ✅ Profile tablosunu güncelle
     const updatedProfile = await prisma.profile.update({
       where: { userId },
-      data: profileData,
+      data: {
+        bio,
+        birthDate,
+        avatarUrl,
+      },
+      include: {
+        user: true, // return user relation too
+      },
     });
 
-    // Kullanıcının gender bilgisi güncelleniyor
-    if (gender) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          gender,
-        },
-      });
-    }
+    // ✅ User tablosunu güncelle
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name,
+        surname,
+        phone,
+        gender,
+      },
+    });
 
     return updatedProfile;
   } catch (error) {
@@ -65,7 +97,6 @@ export class ProfileService {
     throw error;
   }
 }
-
   async uploadPhoto(userId: string, file: Express.Multer.File): Promise<string> {
     const photoKey = await s3Service.uploadFile(file.buffer, file.originalname, 'user-photos');
 
