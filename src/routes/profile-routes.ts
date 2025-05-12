@@ -12,7 +12,7 @@ router.put('/me', authenticate, profileHandler.updateMyProfile)
 
 
 // fotoğraf yükleme işlemi
-router.get('/photo-url', authenticate, profileHandler.getPhotoUrl.bind(profileHandler));
+router.post('/me/photo', authenticate, photoUpload.single('file'), profileHandler.uploadPhoto);
 // fotoğraf silme
 router.delete('/me/photo', authenticate, profileHandler.deletePhoto.bind(profileHandler));
 

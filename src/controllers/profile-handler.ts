@@ -76,21 +76,36 @@ async updateMyProfile(req: AuthenticatedRequest, res: Response, next: NextFuncti
 }
 
 
-  async getPhotoUrl(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { key } = req.query;
-  
-      if (!key || typeof key !== 'string') {
-        res.status(400).json({ error: 'Geçerli bir photoKey belirtilmeli' });
-        return;
-      }
-  
-      const signedUrl = await getPresignedPhotoUrl(key);
-      res.status(200).json({ url: signedUrl });
-    } catch (error) {
-      next(error);
+async uploadPhoto(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({ message: 'Yetkisiz erişim' });
+      return;
     }
+
+    const file = req.file;
+    if (!file) {
+      res.status(400).json({ message: 'Dosya bulunamadı' });
+      return;
+    }
+
+    console.log('📸 Uploaded file:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+      bufferLength: file.buffer ? file.buffer.length : 0,
+    });
+
+    const photoKey = await profileService.uploadPhoto(userId, file);
+
+    res.status(200).json({ message: 'Fotoğraf yüklendi', photoKey });
+  } catch (error) {
+    next(error);
   }
+}
+
+
 
   async deletePhoto(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
