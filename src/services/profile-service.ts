@@ -7,21 +7,31 @@ const s3Service = new S3Service();
 
 
 export class ProfileService {
-  async createProfile(userId: string, data: { bio?: string; birthDate?: Date; avatarUrl?: string }) {
-    try {
-      return await prisma.profile.create({
-        data: {
-          userId,
-          bio: data.bio,
-          birthDate: data.birthDate,
-          avatarUrl: data.avatarUrl
-        }
-      })
-    } catch (error) {
-      console.error('Profil oluşturulurken hata:', error)
-      throw error
+  async createProfile(userId: string, data: { bio?: string; birthDate?: Date; photoKey?: string }) {
+  try {
+    const createdProfile = await prisma.profile.create({
+      data: {
+        userId,
+        bio: data.bio,
+        birthDate: data.birthDate,
+        
+      },
+    });
+
+    if (data.photoKey) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { photoKey: data.photoKey },
+      });
     }
+
+    return createdProfile;
+  } catch (error) {
+    console.error('Profil oluşturulurken hata:', error);
+    throw error;
   }
+}
+
 
   async getMyProfile(userId: string) {
   try {
@@ -36,6 +46,7 @@ export class ProfileService {
             email: true,
             phone: true,
             gender: true,
+            photoKey: true,
           },
         },
       },
@@ -53,7 +64,7 @@ async updateMyProfile(userId: string, data: {
   phone?: string;
   bio?: string;
   birthDate?: Date;
-  avatarUrl?: string;
+  photoKey?: string; 
   gender?: 'men' | 'women' | 'everyone';
 }) {
   try {
@@ -64,23 +75,21 @@ async updateMyProfile(userId: string, data: {
       gender,
       bio,
       birthDate,
-      avatarUrl,
+      photoKey,
     } = data;
 
-    // ✅ Profile tablosunu güncelle
     const updatedProfile = await prisma.profile.update({
       where: { userId },
       data: {
         bio,
         birthDate,
-        avatarUrl,
       },
       include: {
-        user: true, // return user relation too
+        user: true, 
       },
     });
 
-    // ✅ User tablosunu güncelle
+  
     await prisma.user.update({
       where: { id: userId },
       data: {
@@ -88,6 +97,7 @@ async updateMyProfile(userId: string, data: {
         surname,
         phone,
         gender,
+        photoKey, 
       },
     });
 
@@ -97,6 +107,7 @@ async updateMyProfile(userId: string, data: {
     throw error;
   }
 }
+
   async uploadPhoto(userId: string, file: Express.Multer.File): Promise<string> {
     const photoKey = await s3Service.uploadFile(file.buffer, file.originalname, 'user-photos');
 
@@ -113,18 +124,28 @@ async deletePhoto(userId: string): Promise<void> {
     select: { photoKey: true },
   });
 
-  if (!user || !user.photoKey) {
-    throw new Error('Fotoğraf bulunamadı veya zaten silinmiş.');
+  if (!user?.photoKey) {
+    // Fotoğraf zaten yoksa hata yerine sessizce başarılı dönebiliriz (idempotent mantık)
+    console.warn(`deletePhoto: Kullanıcı ${userId} için photoKey bulunamadı.`);
+    return;
   }
 
-  // S3'ten sil
-  await s3Service.deleteFile(user.photoKey);
+  try {
+    // ✅ S3'ten sil
+    await s3Service.deleteFile(user.photoKey);
 
-  // DB'den sil (null yap)
-  await prisma.user.update({
-    where: { id: userId },
-    data: { photoKey: null },
-  });
+    // ✅ DB'den temizle
+    await prisma.user.update({
+      where: { id: userId },
+      data: { photoKey: null },
+    });
+
+    console.log(`deletePhoto: Kullanıcı ${userId} için photo silindi → ${user.photoKey}`);
+  } catch (error) {
+    console.error('deletePhoto hatası:', error);
+    throw new Error('Profil fotoğrafı silinirken hata oluştu.');
+  }
 }
+
 }
 

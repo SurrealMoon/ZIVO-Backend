@@ -69,7 +69,7 @@ export class UserService {
       await profileService.createProfile(user.id, {
         bio: '',
         birthDate: undefined,
-        avatarUrl: undefined,
+        photoKey: undefined,
       });
 
       return user;
