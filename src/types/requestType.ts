@@ -1,14 +1,11 @@
-import { Request } from 'express'
+import { RequestUser } from './user'; // path'e göre güncelle
 
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        id: string
-        roles?: string[]
-      }
+      user?: RequestUser;
     }
   }
 }
 
-export {} // Bu satır gerekli, tür genişletme için
+export {};
