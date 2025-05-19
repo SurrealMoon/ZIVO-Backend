@@ -33,20 +33,45 @@ export class ProfileHandler {
 
   // ✅ Profil getir
   async getMyProfile(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const userId = req.userId;
-      if (!userId) {
-        res.status(401).json({ message: 'Yetkisiz erişim' });
-        return;
-      }
-
-      const profile = await profileService.getMyProfile(userId);
-
-      res.status(200).json(profile);
-    } catch (error) {
-      next(error);
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({ message: 'Yetkisiz erişim' });
+      return;
     }
+
+    const profile = await profileService.getMyProfile(userId);
+
+    if (!profile || !profile.user) {
+      res.status(404).json({ message: 'Profil bulunamadı' });
+      return;
+    }
+
+    // 👇 flatten edilmiş veri yapısı
+    res.status(200).json({
+      id: profile.user.id,
+      email: profile.user.email,
+      name: profile.user.name,
+      surname: profile.user.surname,
+      phone: profile.user.phone,
+      gender: profile.user.gender,
+      photoKey: profile.user.photoKey,
+      profile: {
+        id: profile.id,
+        userId: profile.userId,
+        bio: profile.bio,
+        birthDate: profile.birthDate,
+        avatarUrl: profile.avatarUrl,
+        isProfileComplete: profile.isProfileComplete,
+        createdAt: profile.createdAt,
+        updatedAt: profile.updatedAt,
+      },
+    });
+  } catch (error) {
+    next(error);
   }
+}
+
 
   // ✅ Profil güncelle
   async updateMyProfile(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {

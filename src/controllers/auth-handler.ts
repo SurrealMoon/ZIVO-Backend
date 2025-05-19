@@ -136,8 +136,22 @@ export const getMe = async (req: AuthenticatedRequest, res: Response, next: Next
     res.status(200).json({
       id: user.id,
       email: user.email,
+      name: user.name,
+      surname: user.surname,
+      phone: user.phone,
+      gender: user.gender,
+      photoKey: user.photoKey,
       roles: user.roles.map((r) => r.role),
-      profile: user.profile,
+      profile: user.profile && {
+        id: user.profile.id,
+        userId: user.profile.userId,
+        bio: user.profile.bio,
+        birthDate: user.profile.birthDate,
+        avatarUrl: user.profile.avatarUrl,
+        isProfileComplete: user.profile.isProfileComplete,
+        createdAt: user.profile.createdAt,
+        updatedAt: user.profile.updatedAt,
+      },
     });
   } catch (err) {
     next(err);
