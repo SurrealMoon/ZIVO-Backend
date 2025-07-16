@@ -1,0 +1,21 @@
+Copyright (c) 2025 Mehmet Yıldırım
+
+All rights reserved.
+
+This software and associated documentation files (the "Software") are the exclusive property of the author. No part of this Software may be copied, modified, distributed, or used in any manner without the prior written permission of the author.
+
+Unauthorized use, reproduction, or distribution of this Software, in whole or in part, is strictly prohibited and may result in legal action.
+
+This project is not open source and is intended solely for personal or professional demonstration purposes by the author.
+
+---
+
+Telif Hakkı (c) 2025 Mehmet Yıldırım
+
+Tüm hakları saklıdır.
+
+Bu yazılım ve ilişkili dokümantasyon dosyaları ("Yazılım"), yazarın münhasır mülkiyetindedir. Bu Yazılım'ın hiçbir bölümü, yazarın önceden yazılı izni olmaksızın kopyalanamaz, değiştirilemez, dağıtılamaz veya herhangi bir şekilde kullanılamaz.
+
+Yazılımın izinsiz kullanımı, çoğaltılması veya dağıtılması kesinlikle yasaktır ve hukuki işlemle sonuçlanabilir.
+
+Bu proje açık kaynak değildir ve yalnızca yazar tarafından kişisel veya profesyonel sunum amaçlı paylaşılmıştır.
